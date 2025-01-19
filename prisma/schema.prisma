@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  name          String
+  slug          String         @unique
+  lastName      String         @map("last_name")
+  password      String
+  birthday      DateTime
+  street        String
+  number        String
+  complement    String?
+  neighborhood  String
+  city          String
+  state         State
+  country       String
+  zipCode       String         @map("zip_code")
+  cellphone     String
+  cpf           String         @unique
+  notifications Boolean        @default(false)
+  conditionals  Conditional[]
+  ProductsSold  ProductsSold[]
+}
+
+model Product {
+  id             Int           @id @default(autoincrement())
+  reference      String        @unique
+  name           String
+  description    String
+  category       String
+  subCategory    String?       @map("sub_category")
+  brand          String
+  color          String
+  size           String
+  photos         Photo[]
+  price          Decimal       @db.Decimal(10, 2)
+  status         String        @default("available")
+  barcode        String        @unique
+  createdAt      DateTime      @default(now()) @map("created_at")
+  supplierId     Int           @map("supplier_id")
+  supplier       Supplier      @relation(fields: [supplierId], references: [id])
+  conditionalId  Int?          @map("conditional_id")
+  conditional    Conditional?  @relation(fields: [conditionalId], references: [id])
+  productsSoldId Int?          @map("ProductsSold_id")
+  productsSold   ProductsSold? @relation(fields: [productsSoldId], references: [id])
+  Saller         Saller?       @relation(fields: [sallerId], references: [id])
+  sallerId       Int?
+}
+
+model Saller {
+  id           Int            @id @default(autoincrement())
+  name         String
+  email        String         @unique
+  password     String
+  products     Product[]
+  ProductsSold ProductsSold[]
+}
+
+model Photo {
+  id        Int      @id @default(autoincrement())
+  url       String
+  productId Int      @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+}
+
+model Supplier {
+  id       Int       @id @default(autoincrement())
+  name     String
+  contact  String
+  products Product[]
+}
+
+model ProductsSold {
+  id       Int       @id @default(autoincrement())
+  products Product[]
+  user     User      @relation(fields: [userId], references: [id])
+  userId   Int
+  sellerId Int       @map("seller_id")
+  seller   Saller    @relation(fields: [sellerId], references: [id])
+  soldDate DateTime  @default(now()) @map("sold_date")
+}
+
+model Conditional {
+  id             Int       @id @default(autoincrement())
+  products       Product[]
+  user           User      @relation(fields: [userId], references: [id])
+  quantity       Int
+  withdrawalDate DateTime
+  returnDate     DateTime?
+  status         String
+  userId         Int
+}
+
+model Root {
+  id       Int    @id @default(autoincrement())
+  user     String
+  password String
+}
+
+enum State {
+  AC
+  AL
+  AP
+  AM
+  BA
+  CE
+  DF
+  ES
+  GO
+  MA
+  MT
+  MS
+  PA
+  PR
+  PB
+  PE
+  PI
+  RN
+  RO
+  RR
+  SE
+  TO
+}
